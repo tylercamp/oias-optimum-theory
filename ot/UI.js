@@ -28,6 +28,33 @@
     })
 })();
 
+// sim size options
+(() => {
+    const inputWidth = document.querySelector('#sim-size-x')
+    const inputHeight = document.querySelector('#sim-size-y')
+    const applyButton = document.querySelector('#sim-size-apply')
+
+    const canvas = document.querySelector('canvas')
+    inputWidth.value = canvas.width
+    inputHeight.value = canvas.height
+
+    applyButton.addEventListener('click', () => {
+        const newWidth = inputWidth.value
+        const newHeight = inputHeight.value
+        
+        if (newWidth <= 0 || newHeight <= 0) {
+            alert('Invalid size!')
+            return
+        }
+
+        canvas.width = newWidth
+        canvas.height = newHeight
+
+        rebuildSimState()
+        applyInitSim()
+    })
+})();
+
 // sim speed options
 (() => {
     const input = document.querySelector('#slow-queueframe')

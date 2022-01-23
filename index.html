@@ -12,6 +12,9 @@
         image-rendering: pixelated;
         background-color: green;
     }
+    input[type=number] {
+        width: 5em;
+    }
 </style>
 
 <script src="util/chroma.js"></script>
@@ -42,6 +45,14 @@
     <button id="init-apply">Apply</button>
 </div>
 <div>
+    Sim size:
+    <input type="number" id="sim-size-x">
+    x
+    <input type="number" id="sim-size-y">
+    <button id="sim-size-apply">Apply</button>
+    <em>(Warning: Large values (>1000) may freeze the page)</em>
+</div>
+<div>
     <label for="slow-queueframe">Slow frame step</label>
     <input type="checkbox" id="slow-queueframe">
 </div>
@@ -55,9 +66,13 @@
 <canvas width="400" height="200"></canvas>
 
 <script>
-    const canvas = document.querySelector('canvas')
-    const ctx = canvas.getContext('2d')
-    var sim = prepareSimulation(canvas, ctx)
+    var canvas, ctx, sim
+    function rebuildSimState() {
+        canvas = document.querySelector('canvas')
+        ctx = canvas.getContext('2d')
+        sim = prepareSimulation(canvas, ctx)
+    }
+    rebuildSimState()
 </script>
 
 <script src="ot/UI.js"></script>
