@@ -5,10 +5,7 @@
         margin: 0;
         padding: 0;
     }
-    /* keep canvas at fixed 800x400 screen size, contents will stretch to fit */
     canvas {
-        width: 800px;
-        height: 400px;
         image-rendering: pixelated;
         background-color: green;
     }
@@ -63,7 +60,7 @@
     <button id="vis-apply">Apply</button>
 </div>
 
-<canvas width="400" height="200"></canvas>
+<canvas width="400" height="200" style="width:800px; height:400px"></canvas>
 
 <script>
     var canvas, ctx, sim

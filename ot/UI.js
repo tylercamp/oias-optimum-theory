@@ -38,6 +38,20 @@
     inputWidth.value = canvas.width
     inputHeight.value = canvas.height
 
+    // when sim size changes, update canvas to the same aspect ratio,
+    // preserve original size via diagonal length
+    const pixelSizePattern = /(\d+)/
+    const referenceDiagLen = (() => {
+        let width = canvas.style.width.match(pixelSizePattern)[1]
+        let height = canvas.style.height.match(pixelSizePattern)[1]
+        console.log(width, height)
+
+        width = parseInt(width)
+        height = parseInt(height)
+
+        return Math.sqrt(width*width + height*height)
+    })();
+
     applyButton.addEventListener('click', () => {
         const newWidth = inputWidth.value
         const newHeight = inputHeight.value
@@ -46,6 +60,15 @@
             alert('Invalid size!')
             return
         }
+
+        const newDiag = Math.sqrt(newWidth*newWidth + newHeight*newHeight)
+        const ratio = referenceDiagLen / newDiag
+        const newScreenWidth = newWidth * ratio
+        const newScreenHeight = newHeight * ratio
+
+        console.log(newScreenWidth, newScreenHeight)
+        canvas.style.width = newScreenWidth + 'px'
+        canvas.style.height = newScreenHeight + 'px'
 
         canvas.width = newWidth
         canvas.height = newHeight
