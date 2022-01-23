@@ -8,7 +8,7 @@ storage. This allows us to easily work with multiple buffers of different types.
 SpaceBuffer is mostly written for a generic number of dimensions, some logic is hard-coded for 2
 dimensions.
 
-Create a SpaceBuffer with `new SpaceBuffer(buffspec.spec, [w, h, ...])`.
+Create a SpaceBuffer with `new SpaceBuffer(buffspecs.spec, [w, h, ...])`.
 
 Methods of format `methodN` (eg `valueAtN`) accepts an array of values as position.
 `valueAtN([x,y])`
@@ -178,7 +178,10 @@ class SpaceBuffer {
         return this.buffspec.setv(this.buffer, offset, val)
     }
 
-    // list of values for self and immediate neighbors
+    // list of values for self and immediate neighbors. values are ascending order by dimension,
+    // then position.
+    // (eg for 2D, elements returned in order of appearance for a square block, top->down and left->right.)
+    // (           eg cell above, then cell left, cell current, cell right, cell below)
     sampleN(pos, { diag = false, dist = 1, incpos = false } = {}) {
         // hard-coded for 2D
         const result = new Array(5)
