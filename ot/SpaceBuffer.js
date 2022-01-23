@@ -1,3 +1,26 @@
+/*
+
+A "SpaceBuffer" is a wrapper object for managing data in a simulation space.
+
+The SpaceBuffer has helpers for working with data, and defers to an underlying "buffspec" for actual
+storage. This allows us to easily work with multiple buffers of different types.
+
+SpaceBuffer is mostly written for a generic number of dimensions, some logic is hard-coded for 2
+dimensions.
+
+Create a SpaceBuffer with `new SpaceBuffer(buffspec.spec, [w, h, ...])`.
+
+Methods of format `methodN` (eg `valueAtN`) accepts an array of values as position.
+`valueAtN([x,y])`
+
+Other methods use variadic args as position.
+`valueAt(x, y)`
+
+Setters take a value as first arg, and position as remaining arg(s).
+`setValueAtN(val, [x,y])`
+`setValueAt(val, x, y)`
+
+*/
 
 const _arraySpec = (type) => ({
     gen: (_, size) => new type(size),

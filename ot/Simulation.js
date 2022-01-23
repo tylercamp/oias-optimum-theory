@@ -1,4 +1,15 @@
 
+/*
+
+Handles simulation init and simulation time-step.
+
+Provides the `applyKernel` helper, which fills the value of a `SpaceBuffer` based on some function, eg
+`applyKernel(myBuffer, (pos) => myBuffer.setValueAtN(0, pos))`
+
+Note: Creates the canvas_buffer, but this buffer is populated in `ot/render` files.
+
+*/
+
 var dirs = {
     up: 'u',
     down: 'd',

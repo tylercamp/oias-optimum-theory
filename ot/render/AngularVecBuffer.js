@@ -1,3 +1,12 @@
+/*
+
+Rendering for step_diff buffer which outputs smooth colors based on average gradient direction.
+
+Colors are configured in DirColors.js. Interpolates values in LAB space (using chroma.js) for smoother
+and more accurate color mixing. Very slow due to this extra calculation.
+
+*/
+
 window.prepareCanvasBuffer = RenderAngularVecBuffer
 function RenderAngularVecBuffer(sim) {
     const { canvas_buffer, step_diff } = sim
@@ -52,6 +61,7 @@ function RenderAngularVecBuffer(sim) {
         avg[0] /= mag
         avg[1] /= mag
 
+        /* (WIP attempts at optimization by pre-generating mixed colors and indexing by angle) */
         // let angle = Math.atan2(avg[1], avg[0])
         // if (angle < 0) angle += 2*Math.PI
 
