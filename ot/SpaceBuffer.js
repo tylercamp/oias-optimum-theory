@@ -91,6 +91,18 @@ class SpaceBuffer {
     get width() { this.dims[0] }
     get height() { this.dims[1] }
 
+    get stats() {
+        let min = 10000, max = -10000, sum = 0
+        for (let i = 0; i < this.size; i++) {
+            const v = this.buffspec.getv(this.buffer, i)
+            min = Math.min(min, v)
+            max = Math.max(max, v)
+            sum += v
+        }
+        const avg = sum / this.size
+        return { max, min, avg }
+    }
+
     _assert_sz(arr) {
         if (arr.length != this.dims.length) console.warn("unexpected dims ", arr, ", expected like ", this.dims)
         // NOTE - slow

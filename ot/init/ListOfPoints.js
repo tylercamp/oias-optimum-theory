@@ -1,5 +1,6 @@
 // set of points
-function initSim(sim, range, midx, midy) {
+window.initSim = InitListOfPoints
+function InitListOfPoints(sim, range, midx, midy) {
     const { energy_prev, energy_now } = sim
     energy_prev.fill(0)
     energy_now.fill(0)

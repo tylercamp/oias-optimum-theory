@@ -28,14 +28,13 @@ function prepareSimulation(canvas, ctx) {
 
     // for vis
     var step_diff = new SpaceBuffer(buffspecs.float32Array, canvasDims)
-    var vecavg_encoding = new SpaceBuffer(buffspecs.charArray, canvasDims)
     var vecmax_encoding = new SpaceBuffer(buffspecs.charArray, canvasDims)
 
     energy_now.fill(0)
     energy_prev.fill(0)
 
     const obj = {
-        canvas_buffer, energy_now, energy_prev, step_diff, vecavg_encoding, vecmax_encoding,
+        canvas_buffer, energy_now, energy_prev, step_diff, vecmax_encoding,
     }
 
     obj.ops = {
@@ -49,14 +48,19 @@ function prepareSimulation(canvas, ctx) {
     return obj
 }
 
-function applyKernel(target, kernel) {
+function bufferForEach(buffer, fn) {
     // 2d-only (Nd too expensive)
     let curpos = []
-    for (curpos[1] = 0; curpos[1] < target.dims[1]; curpos[1]++) {
-        for (curpos[0] = 0; curpos[0] < target.dims[0]; curpos[0]++) {
-            target.setValueAtN(kernel(curpos), curpos)
+    for (curpos[1] = 0; curpos[1] < buffer.dims[1]; curpos[1]++) {
+        for (curpos[0] = 0; curpos[0] < buffer.dims[0]; curpos[0]++) {
+            fn(curpos)
         }
     }
+}
+
+function applyKernel(target, kernel) {
+    const update = (curpos) => target.setValueAtN(kernel(curpos), curpos)
+    bufferForEach(target, update)
 }
 
 function runTimeStep(sim, events) {

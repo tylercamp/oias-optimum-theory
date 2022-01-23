@@ -1,4 +1,5 @@
-function prepareCanvasBuffer(sim) {
+window.prepareCanvasBuffer = RenderAngularVecBuffer
+function RenderAngularVecBuffer(sim) {
     const { canvas_buffer, step_diff } = sim
     // vec gradient
     applyKernel(canvas_buffer, (pos) => {

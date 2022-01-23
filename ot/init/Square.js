@@ -1,5 +1,6 @@
 // circle
-function initSim(sim, range, midx, midy) {
+window.initSim = InitSquare
+function InitSquare(sim, range, midx, midy) {
     const { energy_prev } = sim
     const radius = Math.round((midx + midy) / 4)
     for (let y = midy - radius; y < midy + radius; y++) {
