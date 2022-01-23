@@ -1,0 +1,270 @@
+<html>
+    <!-- Old, my first implementation attempt -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            width: 800px;
+            height: 400px;
+            image-rendering: pixelated;
+            background-color: green;
+        }
+    </style>
+    <canvas width="200" height="100"></canvas>
+    <script>
+        function FrameTracker() {
+            this.numTicks = 0
+            this.startTime = new Date().valueOf()
+        }
+        FrameTracker.prototype.tick = function() {
+            this.numTicks++
+            const now = new Date().valueOf()
+            if (now - this.startTime >= 1000) {
+                console.log(`${this.numTicks} fps`)
+                this.numTicks = 0
+                this.startTime = now
+            }
+        }
+    </script>
+    <script>
+        const canvas = document.querySelector('canvas')
+        const ctx = canvas.getContext('2d')
+        let pixels = new Float32Array(canvas.width * canvas.height)
+        let lastPixels = new Float32Array(canvas.width * canvas.height)
+        let diffBuffer = new Float32Array(canvas.width * canvas.height)
+        let vecBuffer = new Float32Array(canvas.width * canvas.height)
+        const imgData = ctx.createImageData(canvas.width, canvas.height)
+        const events = []
+
+        const dir = {
+            LEFT: 1,
+            RIGHT: 2,
+            UP: 3,
+            DOWN: 4,
+            NONE: 5
+        }
+
+        const dirColors = {}
+        dirColors[dir.LEFT] = [17, 168, 101]
+        dirColors[dir.RIGHT] = [17, 71, 168]
+        dirColors[dir.UP] = [12, 245, 142]
+        dirColors[dir.DOWN] = [12, 96, 245]
+        dirColors[dir.NONE] = [245, 108, 0]
+
+        function copyPixels(src, dst) {
+            for (let i = 0; i < src.length; i++)
+                dst[i] = src[i]
+        }
+        // function setPixelRGB(x,y, val) {
+        //     // (RGBA format)
+        //     const start = 4*(y * canvas.width + x)
+        //     pixels[start] = val
+        // }
+        function drawBuffer() {
+            let min = 100, max = -100
+
+            // const sourceBuffer = diffBuffer;
+            // const transform = (val) => Math.round(((val - min) / (max - min)) * 255)
+
+            // const sourceBuffer = pixels;
+
+            const sourceBuffer = vecBuffer
+            const transform = (val) => dirColors[val]
+
+            for (let i = 0; i < sourceBuffer.length; i += 1) {
+                const val = sourceBuffer[i]
+                min = Math.min(val, min)
+                max = Math.max(val, max)
+            }
+
+            // console.log(min, max)
+
+            const range = max - min
+            for (let i = 0; i < sourceBuffer.length; i += 1) {
+                const base = i*4
+                const val = transform(sourceBuffer[i])
+                // const val = ((pixels[i] + 1) / 2) * 255
+                if (val instanceof Array) {
+                    imgData.data[base + 0] = val[0]
+                    imgData.data[base + 1] = val[1]
+                    imgData.data[base + 2] = val[2]
+                } else {
+                    imgData.data[base + 0] = val
+                    imgData.data[base + 1] = val
+                    imgData.data[base + 2] = val
+                }
+                imgData.data[base + 3] = 255
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            ctx.putImageData(imgData, 0, 0)
+            let usedPixels = pixels
+            pixels = lastPixels
+            lastPixels = usedPixels
+        }
+
+        const offsetOf = (x, y) => y*canvas.width + x
+
+        const setCell = (x, y, val, buf) => {
+            const b = buf || pixels
+            b[offsetOf(x,y)] = val
+        }
+
+        const getCell = (x, y, buf) => {
+            const b = buf || lastPixels
+            if (x < 0) x = canvas.width - 1
+            if (y < 0) y = canvas.height - 1
+            if (x >= canvas.width) x -= canvas.width
+            if (y >= canvas.height) y -= canvas.height
+            return b[offsetOf(x,y)]
+        }
+
+        function init() {
+            const range = 10
+            // for (let y = 0; y < canvas.height; y++) {
+            //     for (let x = 0; x < canvas.width; x++) {
+            //         setCell(x, y, Math.random()*range - range/2)
+            //         // setCell(x, y, Math.random())
+            //     }
+            // }
+
+            for (let i = 0; i < pixels.length; i++) pixels[i] = 0
+            const midx = Math.floor(canvas.width / 2)
+            const midy = Math.floor(canvas.height / 2)
+
+            const pts = [[midx, midy, -range]]
+            // const pts = [[midx*.75, midy*.75, -range], [midx*1.25, midy*.75, range], [midx*1.25, midy*1.25, -range], [midx*.75, midy*1.25, range]]
+            pts.forEach(([x, y, val]) => setCell(Math.floor(x), Math.floor(y), val))
+
+            // const radius = Math.round((midx + midy) / 4)
+            // console.log(radius)
+            // for (let y = midy - radius; y < midy + radius; y++) {
+            //     for (let x = midx - radius; x < midx + radius; x++) {
+            //         const dx = x - midx;
+            //         const dy = y - midy;
+            //         const dist = Math.sqrt(dx*dx + dy*dy)
+            //         setCell(x, y, dist)
+            //     }
+            // }
+        }
+
+        let workingMin, workingMax;
+
+        function update() {
+            workingMin = 100
+            workingMax = -100
+            for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                    const newVal = 0.2 * getCell(x,y) + 0.2 * (
+                        getCell(x-1, y) + 
+                        getCell(x+1, y) + 
+                        getCell(x, y-1) + 
+                        getCell(x, y+1)
+                    )
+
+                    workingMin = Math.min(workingMin, newVal)
+                    workingMax = Math.max(workingMax, newVal)
+                    setCell(x, y, newVal)
+                }
+            }
+        }
+
+        function updateDiff() {
+            for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                    const base = offsetOf(x,y);
+                    diffBuffer[base] = Math.abs(lastPixels[base] - pixels[base])
+                }
+            }
+        }
+
+        function maxBy(vals, outputs, ifeq) {
+            let max = -10000
+            let result = null
+            for (let i = 0; i < vals.length; i++) {
+                if (vals[i] > max) {
+                    max = vals[i]
+                    result = outputs[i]
+                }
+            }
+            if (max == vals[0] && max == vals[vals.length - 1]) return ifeq
+            else return result
+        }
+
+        function updateDir() {
+            const adirs = [dir.LEFT, dir.RIGHT, dir.UP, dir.DOWN]
+            for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                    const curVal = getCell(x, y, diffBuffer)
+                    const left = getCell(x-1, y, diffBuffer)
+                    const right = getCell(x+1, y, diffBuffer)
+                    const up = getCell(x, y-1, diffBuffer)
+                    const down = getCell(x, y+1, diffBuffer)
+
+                    const dl = curVal - left
+                    const dr = curVal - right
+                    const du = curVal - up
+                    const dd = curVal - down
+
+                    // note: gradient op is reversed 
+                    const mdir = maxBy(
+                        [dl, dr, du, dd],
+                        adirs,
+                        dir.NONE
+                    )
+                    vecBuffer[offsetOf(x,y)] = mdir
+                }
+            }
+        }
+
+        function renormalize() {
+            const targetRange = 10
+            const range = workingMax - workingMin
+            // console.log(`workingMin ${workingMin} | workingMax ${workingMax} | range ${range}`)
+            for (let i = 0; i < pixels.length; i++) {
+                // pixels[i] = (pixels[i] - workingMin) / range
+                // pixels[i] *= range
+                // pixels[i] -= range/2
+                pixels[i] *= 1.00001
+            }
+        }
+
+        function queueFrame(cb) {
+            // setTimeout(cb, 500)
+            requestAnimationFrame(cb)
+        }
+
+        const tracker = new FrameTracker()
+
+        function runFrame() {
+            update()
+
+            events.forEach(e => e())
+            events.splice(0, events.length)
+
+            // renormalize()
+            updateDiff()
+            updateDir()
+            drawBuffer()
+            tracker.tick()
+            queueFrame(runFrame)
+        }
+
+        init()
+        copyPixels(pixels, lastPixels)
+        drawBuffer()
+        queueFrame(runFrame)
+
+    </script>
+    <script>
+        canvas.addEventListener('click', ({ clientX, clientY }) => {
+            const simx = (clientX / canvas.clientWidth) * canvas.width
+            const simy = (clientY / canvas.clientHeight) * canvas.height
+
+            console.log(simx, simy)
+
+            events.push(() => setCell(Math.floor(simx), Math.floor(simy), -10))
+        })
+    </script>
+</html>
