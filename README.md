@@ -1,4 +1,4 @@
-A canvas-based implementation of the Optimum Theory simulation as described by Gary Lee.
+A canvas-based implementation of the Optimum Theory simulation [as described by Gary Lee](https://www.youtube.com/watch?v=gj3eOIMA2WI) at the [Optimum Institute for Advanced Study](https://optimuminstitute.org).
 
 First attempt is in `old.html`, kept for reference.
 
