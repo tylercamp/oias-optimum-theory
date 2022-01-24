@@ -104,22 +104,23 @@ function runTimeStep(sim, events) {
     applyKernel(step_diff, (pos) => Math.abs(energy_now.valueAtN(pos) - energy_prev.valueAtN(pos)))
 
     // vecmax kernel
+    const dirVals = new Array(4)
+    const allDirs = [dirs.left, dirs.right, dirs.up, dirs.down]
     applyKernel(vecmax_encoding, (pos) => {
-        const [x, y] = [pos]
         const [     up,
             left, curVal, right,
                     down
         ] = step_diff.sampleN(pos)
 
-        const dl = curVal - left
-        const dr = curVal - right
-        const du = curVal - up
-        const dd = curVal - down
+        dirVals[0] = curVal - left
+        dirVals[1] = curVal - right
+        dirVals[2] = curVal - up
+        dirVals[3] = curVal - down
 
         // note: gradient op is reversed 
         const maxdir = maxBy(
-            [dl,        dr,         du,      dd],
-            [dirs.left, dirs.right, dirs.up, dirs.down],
+            dirVals,
+            allDirs,
             dirs.none
         )
 
@@ -127,4 +128,20 @@ function runTimeStep(sim, events) {
 
         return maxdir
     })
+
+    /* renormalize */
+    const stats = energy_now.stats
+    const curRange = stats.max - stats.min
+    if (curRange < 5) {
+        console.log('renormalizing')
+        const fix = 10 / curRange
+        applyKernel(energy_now, (pos) => {
+            const val = energy_now.valueAtN(pos)
+            return val * fix
+        })
+        applyKernel(energy_prev, (pos) => {
+            const val = energy_prev.valueAtN(pos)
+            return val * fix
+        })
+    }
 }

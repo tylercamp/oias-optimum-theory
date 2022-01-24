@@ -71,7 +71,6 @@ const buffspecs = {
             imgData.data[pixOffset + 3] = 255                 
         },
         fill: (imgData, val) => {
-            let set;
             if (val instanceof Array) {
                 for (let offset = 0; offset < canvas.width * canvas.height; offset++) {
                     const base = offset * 4;
@@ -110,6 +109,9 @@ class SpaceBuffer {
         for (let d = 0; d < this.numDims - 1; d++) {
             this.strides.push(this.strides[d]*this.dims[d])
         }
+
+        this._sampleCache = {}
+        this._tmppos = new Array(this.numDims)
     }
 
     get width() { this.dims[0] }
@@ -130,7 +132,7 @@ class SpaceBuffer {
     _assert_sz(arr) {
         if (arr.length != this.dims.length) console.warn("unexpected dims ", arr, ", expected like ", this.dims)
         // NOTE - slow
-        arr.forEach(v => { if (v != Math.round(v)) debugger })
+        // arr.forEach(v => { if (v != Math.round(v)) debugger })
     }
 
     _offsetFor(pos) {
@@ -185,8 +187,10 @@ class SpaceBuffer {
     // (           eg cell above, then cell left, cell current, cell right, cell below)
     sampleN(pos, { diag = false, dist = 1, incpos = false } = {}) {
         // hard-coded for 2D
-        const result = new Array(diag ? 9 : 5)
-        const tmppos = [...pos]
+        const resultSize = diag ? 9 : 5
+        const result = (this._sampleCache[resultSize] = this._sampleCache[resultSize] || new Array(resultSize))
+        const tmppos = this._tmppos
+        for (let x = 0; x < this.numDims; x++) tmppos[x] = pos[x]
         let i = 0
 
         tmppos[1] -= 1

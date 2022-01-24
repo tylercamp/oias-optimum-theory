@@ -11,9 +11,23 @@ is calculated here and used to index into the precomputed array.)
 window.prepareCanvasBuffer = RenderAngularVecBufferFast
 function RenderAngularVecBufferFast(sim) {
     const { canvas_buffer, step_diff } = sim
+
+    const C_BLACK = [0,0,0]
+    const vecs = [
+        [[0,-1], 0],
+        [[0,1], 0],
+        [[-1,0], 0],
+        [[1,0], 0]
+    ]
+    const vecZero = [0,0]
+    const vecAccum = (c, v) => {
+        c[0] += v[0][0] * v[1]
+        c[1] += v[0][1] * v[1]
+        return c
+    };
+
     // vec gradient
     applyKernel(canvas_buffer, (pos) => {
-        const [x, y] = [pos]
         const [     up,
             left, curVal, right,
                    down
@@ -28,7 +42,7 @@ function RenderAngularVecBufferFast(sim) {
         const max = Math.max(dl, dr, du, dd)
 
         if (max == min) {
-            return [0,0,0]
+            return C_BLACK
         }
         const invrange = 1 / (max - min)
 
@@ -42,22 +56,16 @@ function RenderAngularVecBufferFast(sim) {
         du *= invrange
         dd *= invrange
 
-        const vecs = [
-            [[0,-1], du],
-            [[0, 1], dd],
-            [[-1, 0], dl],
-            [[1, 0], dr]
-        ]
+        vecs[0][1] = du
+        vecs[1][1] = dd
+        vecs[2][1] = dl
+        vecs[3][1] = dr
 
-        const avg = vecs.accumulate([0,0], (c, v) => {
-            const [vec, str] = v
-            c[0] += vec[0] * str
-            c[1] += vec[1] * str
-            return c
-        })
+        vecZero[0] = vecZero[1] = 0
+        const avg = vecs.accumulate(vecZero, vecAccum)
 
         const mag = Math.sqrt(avg[0]*avg[0] + avg[1]*avg[1])
-        if (mag == 0) return [0,0,0,0]
+        if (mag == 0) return C_BLACK
 
         avg[0] /= mag
         avg[1] /= mag
