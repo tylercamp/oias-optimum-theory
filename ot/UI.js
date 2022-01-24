@@ -82,16 +82,17 @@
 (() => {
     const renderOptions = {
         energy_now: [
-            window.RenderGrayscaleEnergyBufferRaw || null,
-            window.RenderGrayscaleEnergyBufferNormalized || null,
+            window.RenderGrayscaleEnergyBufferRaw,
+            window.RenderGrayscaleEnergyBufferNormalized,
         ],
         // energy_prev: [],
         step_diff: [
-            window.RenderGrayscaleDiffBufferNormalized || null,
+            window.RenderGrayscaleDiffBufferNormalized,
         ],
         vecmax_encoding: [
-            window.RenderCardinalVecBuffer || null,
-            window.RenderAngularVecBuffer || null,
+            window.RenderCardinalVecBuffer,
+            window.RenderAngularVecBuffer,
+            window.RenderAngularVecBufferFast,
         ],
     };
 

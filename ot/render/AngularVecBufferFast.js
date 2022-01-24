@@ -1,16 +1,15 @@
 /*
 
-(Note: Old, use Fast version)
-
 Rendering for step_diff buffer which outputs smooth colors based on average gradient direction.
 
 Colors are configured in DirColors.js. Interpolates values in LAB space (using chroma.js) for smoother
-and more accurate color mixing. Very slow due to this extra calculation.
+and more accurate color mixing. (This interpolation is precomputed for a set of vector angles; angle
+is calculated here and used to index into the precomputed array.)
 
 */
 
-window.prepareCanvasBuffer = RenderAngularVecBuffer
-function RenderAngularVecBuffer(sim) {
+window.prepareCanvasBuffer = RenderAngularVecBufferFast
+function RenderAngularVecBufferFast(sim) {
     const { canvas_buffer, step_diff } = sim
     // vec gradient
     applyKernel(canvas_buffer, (pos) => {
@@ -63,24 +62,9 @@ function RenderAngularVecBuffer(sim) {
         avg[0] /= mag
         avg[1] /= mag
 
-        const percUp = Math.max(0, -avg[1])
-        const percDown = Math.max(0, avg[1])
-        const percLeft = Math.max(0, -avg[0])
-        const percRight = Math.max(0, avg[0])
+        let angle = Math.atan2(avg[1], avg[0]) + Math.PI
 
-        let [colx, percx] = percLeft > percRight
-            ? [dirColorsLab[dirs.left], percLeft]
-            : [dirColorsLab[dirs.right], percRight]
-        
-        let [coly, percy] = percUp > percRight
-            ? [dirColorsLab[dirs.up], percUp]
-            : [dirColorsLab[dirs.down], percDown]
-
-        const sum = percx + percy
-        percx /= sum
-        percy /= sum
-        
-        const scale = chroma.scale([colx, coly]).mode('lab')
-        return scale(percy).rgb()
+        const angleIndex = Math.floor(angle / dirColorsLabAngleInc)
+        return dirColorsLabByAngle[angleIndex]
     })
 }

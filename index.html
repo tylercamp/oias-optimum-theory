@@ -68,8 +68,13 @@
 
 <!-- DISPLAY -->
 <script src="ot/render/DirColors.js"></script>
-
 <!-- Config Options -->
+    <!-- Initial conditions -->
+    <script src="ot/init/Random.js"></script>
+    <script src="ot/init/ListOfPoints.js"></script>
+    <script src="ot/init/Square.js"></script>
+    <!-- (the last init method to be included will become the default method) -->
+
     <!-- Render Methods -->
     <!-- (In "Real-Time Volume Graphics" (Klaus Engel et. al. 2006) they refer to "Transfer Functions", which are ways of mapping
           real data to a value convenient for visualization. In that sense, all methods listed below are "transfer functions" which
@@ -77,17 +82,12 @@
     <script src="ot/render/GrayscaleEnergyBufferRaw.js"></script>
     <script src="ot/render/GrayscaleEnergyBufferNormalized.js"></script>
     <script src="ot/render/DiffBufferNormalized.js"></script>
-    <script src="ot/render/AngularVecBuffer.js"></script>
+    <!-- <script src="ot/render/AngularVecBuffer.js"></script> -->
     <script src="ot/render/CardinalVecBuffer.js"></script>
+    <script src="ot/render/AngularVecBufferFast.js"></script>
     <!-- (the last render method to be included will become the default method) -->
-    
-    <!-- Initial conditions -->
-    <script src="ot/init/Random.js"></script>
-    <script src="ot/init/ListOfPoints.js"></script>
-    <script src="ot/init/Square.js"></script>
-    <!-- (the last init method to be included will become the default method) -->
 
-
+    <!-- (any new options should be reflected in UI.js) -->
 
 <script>
     var canvas, ctx, sim
