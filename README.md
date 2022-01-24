@@ -1,5 +1,7 @@
 A canvas-based implementation of the Optimum Theory simulation [as described by Gary Lee](https://www.youtube.com/watch?v=gj3eOIMA2WI) at the [Optimum Institute for Advanced Study](https://optimuminstitute.org).
 
+![](ot.png)
+
 First attempt is in `old.html`, kept for reference.
 
 Latest attempt is `index.html`, which has UI for managing different options.
