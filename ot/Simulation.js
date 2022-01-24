@@ -81,12 +81,19 @@ function runTimeStep(sim, events) {
         energy_now, energy_prev, step_diff, vecmax_encoding
     } = sim
 
-    // blur kernel
+    // blur kernel (von-neumman)
     applyKernel(energy_now, (pos) => {
         // 4 neighbors + self
         const neighborhood = energy_prev.sampleN(pos)
         return neighborhood.accumulate(0, (c, v) => c+v) / neighborhood.length
     })
+
+    // // blur kernel (unit circle)
+    // applyKernel(energy_now, (pos) => {
+    //     // 
+    //     // sample on unit circle instead of 4 adjacent neighbors. adjacent neighbors
+    //     // have weight of 1, diagonal neighbors have weight (1-)
+    // })
 
     events.forEach(e => e())
     events.splice(0, events.length)

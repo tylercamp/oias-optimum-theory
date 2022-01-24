@@ -1,66 +1,93 @@
 <!DOCTYPE html>
 <html>
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-    }
-    canvas {
-        image-rendering: pixelated;
-        background-color: green;
-    }
-    input[type=number] {
-        width: 5em;
-    }
+    input[type=number] { width: 5em; }
 </style>
 
-<script src="util/chroma.js"></script>
-<script src="util/Array.prototype.js"></script>
-<script src="util/FrameTracker.js"></script>
+<script>
+    // (for detecting global vars for docs)
+    window._lastKnownFields = Object.keys(window)
+</script>
 
+<!-- UI -->
+<div>
+    <div>
+        Init select:
+        <select id="init-select"></select>
+        <button id="init-apply">Apply</button>
+    </div>
+    <form onsubmit="event.preventDefault()">
+        Sim size:
+        <input type="number" id="sim-size-x">
+        x
+        <input type="number" id="sim-size-y">
+        <input type="submit" id="sim-size-apply" value="Apply">
+        <em>(Warning: Large values (>1000) may freeze the page)</em>
+    </form>
+    <div>
+        Render select: 
+        <select id="buffer-select"></select>
+        <select id="vis-select"></select>
+        <button id="vis-apply">Apply</button>
+    </div>
+    <div>
+        <button id="sim-start">Start</button>
+        <button id="sim-stop">Stop</button>
+        <button id="sim-step">Run Once</button>
+    </div>
+    <div>
+        <label for="slow-queueframe">Slow frame step</label>
+        <input type="checkbox" id="slow-queueframe" autocomplete="off">
+        <!-- (autocomplete attribute needed to prevent checkbox from staying checked after refresh) -->
+    </div>
+</div>
+
+<!-- SIM DISPLAY -->
+<canvas
+    width="400"
+    height="200"
+    style="width:800px; height:400px; image-rendering: pixelated; background-color: green;"
+></canvas>
+<div id="fps-counter"></div>
+
+
+<!--
+    !! Webapp Start !!
+-->
+
+
+<!-- LIBS -->
+<script src="util/chroma.js"></script> 
+<script src="util/Array.prototype.js"></script> 
+<script src="util/FrameTracker.js"></script>
+<script src="util/RenderScheduler.js"></script>
+
+<!-- SIM -->
 <script src="ot/SpaceBuffer.js"></script>
 <script src="ot/Simulation.js"></script>
 
+<!-- DISPLAY -->
 <script src="ot/render/DirColors.js"></script>
 
-<!-- (the last render method to be included will become the default method) -->
-<script src="ot/render/GrayscaleEnergyBufferRaw.js"></script>
-<script src="ot/render/GrayscaleEnergyBufferNormalized.js"></script>
-<script src="ot/render/DiffBufferNormalized.js"></script>
-<script src="ot/render/AngularVecBuffer.js"></script>
-<script src="ot/render/CardinalVecBuffer.js"></script>
+<!-- Config Options -->
+    <!-- Render Methods -->
+    <!-- (In "Real-Time Volume Graphics" (Klaus Engel et. al. 2006) they refer to "Transfer Functions", which are ways of mapping
+          real data to a value convenient for visualization. In that sense, all methods listed below are "transfer functions" which
+          apply to different buffers in the simulation.) -->
+    <script src="ot/render/GrayscaleEnergyBufferRaw.js"></script>
+    <script src="ot/render/GrayscaleEnergyBufferNormalized.js"></script>
+    <script src="ot/render/DiffBufferNormalized.js"></script>
+    <script src="ot/render/AngularVecBuffer.js"></script>
+    <script src="ot/render/CardinalVecBuffer.js"></script>
+    <!-- (the last render method to be included will become the default method) -->
+    
+    <!-- Initial conditions -->
+    <script src="ot/init/Random.js"></script>
+    <script src="ot/init/ListOfPoints.js"></script>
+    <script src="ot/init/Square.js"></script>
+    <!-- (the last init method to be included will become the default method) -->
 
-<!-- (the last init method to be included will become the default method) -->
-<script src="ot/init/Random.js"></script>
-<script src="ot/init/ListOfPoints.js"></script>
-<script src="ot/init/Square.js"></script>
 
-<div id="fps-counter"></div>
-<div>
-    Init select:
-    <select id="init-select"></select>
-    <button id="init-apply">Apply</button>
-</div>
-<div>
-    Sim size:
-    <input type="number" id="sim-size-x">
-    x
-    <input type="number" id="sim-size-y">
-    <button id="sim-size-apply">Apply</button>
-    <em>(Warning: Large values (>1000) may freeze the page)</em>
-</div>
-<div>
-    <label for="slow-queueframe">Slow frame step</label>
-    <input type="checkbox" id="slow-queueframe">
-</div>
-<div>
-    Render select: 
-    <select id="buffer-select"></select>
-    <select id="vis-select"></select>
-    <button id="vis-apply">Apply</button>
-</div>
-
-<canvas width="400" height="200" style="width:800px; height:400px"></canvas>
 
 <script>
     var canvas, ctx, sim
@@ -94,17 +121,9 @@
     
     // FPS tracking
     const tracker = new FrameTracker()
-    window.queueFrame = queueFrameFast
-    queueFrame(runFrame)
 
-    function queueFrameFast(cb) {
-        requestAnimationFrame(cb)
-    }
-    function queueFrameSlow(cb) {
-        setTimeout(cb, 500)
-    }
-
-    function runFrame() {
+    window.scheduler = new RenderScheduler({ slowSpeed: 500 })
+    scheduler.onFrame(() => {
         runTimeStep(sim, events)
 
         // draw
@@ -116,7 +135,17 @@
         tracker.tick((fps) => {
             document.querySelector('#fps-counter').textContent = `${fps} fps`
         })
-        queueFrame(runFrame)
-    }
+    })
+
+    scheduler.start()
+</script>
+<script>
+    const _newKnownFields = Object.keys(window)
+    const _newFields = (() => {
+        const visited = {}
+        _lastKnownFields.forEach(f => visited[f] = true)
+        return _newKnownFields.filter(f => !visited[f])
+    })();
+    console.log("global vars: ", _newFields)
 </script>
 </html>

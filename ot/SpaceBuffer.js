@@ -10,7 +10,7 @@ dimensions.
 
 Create a SpaceBuffer with `new SpaceBuffer(buffspecs.spec, [w, h, ...])`.
 
-Methods of format `methodN` (eg `valueAtN`) accepts an array of values as position.
+Methods of format `methodN` (eg `valueAtN`) accept an array of values as position.
 `valueAtN([x,y])`
 
 Other methods use variadic args as position.
@@ -52,6 +52,7 @@ const buffspecs = {
             }
         }
     },
+    // for writing to canvas
     imageData: (ctx) => ({
         dims: 2,
         gen: (dims) => ctx.createImageData(...dims),
@@ -184,22 +185,43 @@ class SpaceBuffer {
     // (           eg cell above, then cell left, cell current, cell right, cell below)
     sampleN(pos, { diag = false, dist = 1, incpos = false } = {}) {
         // hard-coded for 2D
-        const result = new Array(5)
+        const result = new Array(diag ? 9 : 5)
         const tmppos = [...pos]
+        let i = 0
+
         tmppos[1] -= 1
-        result[0] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
+        if (diag) {
+            tmppos[0] -= 1
+            result[i++] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
+            tmppos[0] += 1
+        }
+        result[i++] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
+        if (diag) {
+            tmppos[0] += 1
+            result[i++] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
+            tmppos[0] -= 1
+        }
         tmppos[1] += 1
 
         tmppos[0] -= 1
-        result[1] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
+        result[i++] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
         tmppos[0] += 1
-        result[2] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
+        result[i++] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
         tmppos[0] += 1
-        result[3] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
+        result[i++] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
         tmppos[0] -= 1
 
         tmppos[1] += 1
-        result[4] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
+        if (diag) {
+            tmppos[0] -= 1
+            result[i++] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
+            tmppos[0] += 1
+        }
+        result[i++] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
+        if (diag) {
+            tmppos[0] += 1
+            result[i++] = this.buffspec.getv(this.buffer, this._offsetFor(tmppos))
+        }
         return result
     }
 }

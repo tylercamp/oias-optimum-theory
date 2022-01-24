@@ -78,16 +78,6 @@
     })
 })();
 
-// sim speed options
-(() => {
-    const input = document.querySelector('#slow-queueframe')
-    input.addEventListener('click', () => {
-        const useSlow = input.checked
-        if (useSlow) window.queueFrame = queueFrameSlow
-        else window.queueFrame = queueFrameFast
-    })
-})();
-
 // render-select options
 (() => {
     const renderOptions = {
@@ -165,6 +155,30 @@
     }
 })();
 
+// sim speed options
+(() => {
+    const slowSimInput = document.querySelector('#slow-queueframe')
+    slowSimInput.addEventListener('click', () => {
+        const useSlow = slowSimInput.checked
+        if (window.scheduler.isRunning) {
+            window.scheduler.start(useSlow)
+        }
+    })
+
+    document.querySelector('#sim-start').addEventListener('click', () => {
+        window.scheduler.start(slowSimInput.checked)
+    })
+
+    document.querySelector('#sim-stop').addEventListener('click', () => {
+        window.scheduler.pause()
+    })
+
+    document.querySelector('#sim-step').addEventListener('click', () => {
+        window.scheduler.step()
+    })
+})();
+
+
 // catch click events, set value in sim
 const events = []
 canvas.addEventListener('click', (ev) => {
@@ -179,4 +193,4 @@ canvas.addEventListener('click', (ev) => {
     console.log(simx, simy)
     const { energy_now } = sim
     events.push(() => energy_now.setValueAt(-10, Math.floor(simx), Math.floor(simy)))
-})
+});
