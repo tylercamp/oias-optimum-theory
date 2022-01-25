@@ -177,6 +177,25 @@
     document.querySelector('#sim-step').addEventListener('click', () => {
         window.scheduler.step()
     })
+
+    document.querySelector('#sim-renormalize').addEventListener('click', () => {
+        /* renormalize */
+        // constantly averaging brings values
+        // closer to float epsilon, renormalize by rescaling
+        // to a range of 10 and offset by the average (to keep values
+        // near 0 for better precision)
+        const { energy_prev } = window.sim
+        const stats = energy_prev.stats
+        const curRange = stats.max - stats.min
+
+        console.log('renormalizing')
+        const fix = 10 / curRange
+        applyKernel(energy_prev, (pos) => {
+            const val = energy_prev.valueAtN(pos)
+            return val * fix
+        })
+        console.log(energy_prev.stats)
+    })
 })();
 
 

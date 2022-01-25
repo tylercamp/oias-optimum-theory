@@ -128,21 +128,4 @@ function runTimeStep(sim, events) {
 
         return maxdir
     })
-
-    /* renormalize */
-    // constantly averaging brings values
-    // closer to float epsilon, renormalize by rescaling
-    // to a range of 10 and offset by the average (to keep values
-    // near 0 for better precision)
-    const stats = energy_now.stats
-    const curRange = stats.max - stats.min
-    if (curRange < 5) {
-        console.log('renormalizing')
-        const fix = 10 / curRange
-        applyKernel(energy_now, (pos) => {
-            const val = energy_now.valueAtN(pos)
-            return val * fix - stats.avg
-        })
-        console.log(energy_now.stats)
-    }
 }
