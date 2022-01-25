@@ -130,6 +130,10 @@ function runTimeStep(sim, events) {
     })
 
     /* renormalize */
+    // constantly averaging brings values
+    // closer to float epsilon, renormalize by rescaling
+    // to a range of 10 and offset by the average (to keep values
+    // near 0 for better precision)
     const stats = energy_now.stats
     const curRange = stats.max - stats.min
     if (curRange < 5) {
@@ -137,11 +141,8 @@ function runTimeStep(sim, events) {
         const fix = 10 / curRange
         applyKernel(energy_now, (pos) => {
             const val = energy_now.valueAtN(pos)
-            return val * fix
+            return val * fix - stats.avg
         })
-        applyKernel(energy_prev, (pos) => {
-            const val = energy_prev.valueAtN(pos)
-            return val * fix
-        })
+        console.log(energy_now.stats)
     }
 }
