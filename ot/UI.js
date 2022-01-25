@@ -182,7 +182,8 @@
 
 // catch click events, set value in sim
 const events = []
-canvas.addEventListener('click', (ev) => {
+var isDragging = false
+function handleMouseEvent(ev) {
     console.log(ev)
     const rect = ev.target.getBoundingClientRect()
     let { clientX, clientY } = ev
@@ -194,4 +195,14 @@ canvas.addEventListener('click', (ev) => {
     console.log(simx, simy)
     const { energy_now } = sim
     events.push(() => energy_now.setValueAt(-10, Math.floor(simx), Math.floor(simy)))
-});
+}
+canvas.addEventListener('mousedown', ev => {
+    handleMouseEvent(ev)
+    isDragging = true
+})
+canvas.addEventListener('mousemove', ev => {
+    if (isDragging) handleMouseEvent(ev)
+})
+canvas.addEventListener('mouseup', ev => {
+    isDragging = false
+})
